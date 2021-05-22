@@ -21,6 +21,15 @@ import Container from '@material-ui/core/Container';
 import { auth, firebase, firestore } from '../firebase/firebase.config'
 import swal from 'sweetalert';
 import { DataGrid } from '@material-ui/data-grid';
+import Card from '@material-ui/core/Card';
+import CardActionArea from '@material-ui/core/CardActionArea';
+import CardContent from '@material-ui/core/CardContent';
+import CardMedia from '@material-ui/core/CardMedia';
+import Hidden from '@material-ui/core/Hidden';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import {
   randomCreatedDate,
   randomUpdatedDate,
@@ -42,7 +51,12 @@ export default function MainPage() {
     </div>
   )
   
-  function Main() {
+  function Main(props) {
+    const [ setPosts] = useState([]);
+    // useEffect(() => {
+    //     getPosts();
+    // }, [])
+    const [expanded, setExpanded] = React.useState(false);
     var user = firebase.auth().currentUser;
     var email, uid;
     if (user) {
@@ -51,8 +65,8 @@ export default function MainPage() {
       uid = user.uid;
     }
     const columns = [
-      { field: 'სახელი', width: 150 },
-      { field: 'ლინკი', width: 150 },
+      { field: 'სახელი', width: 170 },
+      { field: 'ლინკი', width: 170 },
       {
         field: 'აღწერა',
         valueGetter: (params) =>
@@ -62,10 +76,10 @@ export default function MainPage() {
         sortComparator: (v1, v2, param1, param2) =>
           param1.api.getCellValue(param1.id, 'ლინკი') -
           param2.api.getCellValue(param2.id, 'ლინკი'),
-        width: 150,
+        width: 170,
       },
-      { field: 'ლიმიტი', width: 150 },
-      { field: 'ფასიანი', width: 150 },
+      { field: 'ლიმიტი', width: 170 },
+      { field: 'ფასიანი', width: 170 },
     ];
     
     const rows = [
@@ -102,12 +116,81 @@ export default function MainPage() {
         sort: 'asc',
       },
     ];
+    const styles = makeStyles({
+      card: {
+        display: 'flex',
+      },
+      cardDetails: {
+        flex: 1,
+      },
+      cardMedia: {
+        width: 160,
+      },
+      root: {
+        width: '100%',
+      },
+    });
+    const posts = makeStyles((theme) => ({
+      root: {
+        width: '100%',
+      },
+      heading: {
+        fontSize: theme.typography.pxToRem(15),
+        flexBasis: '33.33%',
+        flexShrink: 0,
+      },
+      secondaryHeading: {
+        fontSize: theme.typography.pxToRem(15),
+        color: theme.palette.text.secondary,
+      },
+    }));
     
+    const classes = posts();
+    const getPosts = async () => {
+      const data = await firestore.collection("posts").get();
+      setPosts(data.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id
+      })))
+  }
+  
+    const handleChange = (panel) => (event, isExpanded) => {
+      setExpanded(isExpanded ? panel : false);
+    };
+  const { post } = props;
     return (
         <div>
           <div style={{ height: 400, width: '60%', margin: "auto" }}>
             <DataGrid sortModel={sortModel} rows={rows} columns={columns} />
           </div>
+          <br />
+          <br />
+          <br />
+          <br />
+          <div className={classes.root}>
+          {
+                        posts.map((post, index) => {
+                          return (
+      <Accordion expanded={expanded === 'panel1'} onChange={handleChange('panel1')}>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          aria-controls="panel1bh-content"
+          id="panel1bh-header"
+        >
+          <Typography className={classes.heading}>General settings</Typography>
+          <Typography className={classes.secondaryHeading}>I am an accordion</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Typography>
+            Nulla facilisi. Phasellus sollicitudin nulla et quam mattis feugiat. Aliquam eget
+            maximus est, id dignissim quam.
+          </Typography>
+        </AccordionDetails>
+      </Accordion>
+                                  )
+                                })
+                            }
+    </div>
         </div>
     )
   }
@@ -169,6 +252,7 @@ export default function MainPage() {
     submit: {
       margin: theme.spacing(3, 0, 2),
     },
+    
   }));
 
     const classes = useStyles();
