@@ -26,10 +26,10 @@ export default function MainPage() {
     <div>
       <Router>
         <Switch>
-          <Route to="/">
+          <Route path="/">
             <Login />  
           </Route>
-          <Route to="/home">
+          <Route path="/home" exact>
             <Main />
           </Route>
         </Switch>
