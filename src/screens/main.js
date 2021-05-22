@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import { BrowserRouter as Router, Switch, Route, Link, useLocation, useParams, Redirect, useHistory } from "react-router-dom";
 import PropTypes from 'prop-types';
 import SwipeableViews from 'react-swipeable-views';
@@ -20,28 +20,100 @@ import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import { auth, firebase, firestore } from '../firebase/firebase.config'
 import swal from 'sweetalert';
+import { DataGrid } from '@material-ui/data-grid';
+import {
+  randomCreatedDate,
+  randomUpdatedDate,
+} from '@material-ui/x-grid-data-generator';
 
 export default function MainPage() {
   return (
     <div>
       <Router>
         <Switch>
-          <Route path="/">
-            <Login />  
-          </Route>
-          <Route path="/home" exact>
+          <Route path="/home">
             <Main />
+          </Route>
+          <Route path="/" exact>
+            <Login />  
           </Route>
         </Switch>
       </Router>
     </div>
   )
+  
   function Main() {
+    var user = firebase.auth().currentUser;
+    var email, uid;
+    if (user) {
+    if (user != null) {
+      email = user.email;
+      uid = user.uid;
+    }
+    const columns = [
+      { field: 'სახელი', width: 150 },
+      { field: 'ლინკი', width: 150 },
+      {
+        field: 'აღწერა',
+        valueGetter: (params) =>
+          `${params.getValue(params.id, 'სახელი') || 'unknown'} - ${
+            params.getValue(params.id, 'ლინკი') || 'x'
+          }`,
+        sortComparator: (v1, v2, param1, param2) =>
+          param1.api.getCellValue(param1.id, 'ლინკი') -
+          param2.api.getCellValue(param2.id, 'ლინკი'),
+        width: 150,
+      },
+      { field: 'ლიმიტი', width: 150 },
+      { field: 'ფასიანი', width: 150 },
+    ];
+    
+    const rows = [
+      {
+        id: 1,
+        სახელი: 'Google Classroom',
+        ლინკი: 'https://edu.google.com/products/classroom/',
+        აღწერა: 'Google Classroom არის უფასო ვებ – სერვისი, რომელიც Google– მა შექმნა სკოლებისთვის და მიზნად ისახავს დავალებების შექმნის, განაწილებისა და შეფასების გამარტივებას. Google Classroom- ის ძირითადი მიზანია მასწავლებლებსა და სტუდენტებს შორის ფაილების გაზიარების პროცესის გამარტივება. დადგენილია, რომ Google Classroom- ს 40-დან 100 მილიონამდე ადამიანი იყენებს.',
+        ლიმიტი: 'არა',
+        ფასიანი: 'არა',
+      },
+      {
+        id: 2,
+        სახელი: 'Google Meet',
+        ლინკი: 'https://meet.google.com',
+        აღწერა: 'Google Meet (ადრე ცნობილი როგორც Hangouts Meet) - ვიდეო – საკომუნიკაციო სერვისი, რომელიც Google– მა შექმნა. ეს არის ერთი ორი აპლიკაციიდან, რომელიც წარმოადგენს Google Hangouts- ის ჩანაცვლებას, მეორე არის Google Chat.',
+        ლიმიტი: 'არა',
+        ფასიანი: 'არა',
+      },
+      {
+        id: 3,
+        სახელი: 'Zoom',
+        ლინკი: 'https://zoom.us',
+        აღწერა: 'Zoom Video Communications, Inc. არის ამერიკული საკომუნიკაციო ტექნოლოგიური კომპანია, რომლის სათაო ოფისი მდებარეობს სან ხოსეში, კალიფორნია. ის გთავაზობთ სატელეფონო და ონლაინ ჩეთ სერვისებს პროგრამული პლატფორმის საშუალებით და გამოიყენება ტელეკონფერენციის, ტელეკომუნიკაციის, დისტანციური სწავლებისა და სოციალური ურთიერთობებისათვის.',
+        ლიმიტი: 'კი',
+        ფასიანი: 'კი',
+      },
+      
+    ];
+    
+    const sortModel = [
+      {
+        field: 'ლიმიტი',
+        sort: 'asc',
+      },
+    ];
+    
     return (
         <div>
-            a
+          <div style={{ height: 400, width: '60%', margin: "auto" }}>
+            <DataGrid sortModel={sortModel} rows={rows} columns={columns} />
+          </div>
         </div>
     )
+  }
+  else {
+    return "nope"
+  }
   }
   function Login() {
   function TabPanel(props) {
