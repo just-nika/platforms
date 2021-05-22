@@ -18,12 +18,12 @@ import Box from '@material-ui/core/Box';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
-import { auth, firebase } from '../firebase/firebase.config'
+import { auth, firebase, firestore } from '../firebase/firebase.config'
 import swal from 'sweetalert';
+import { useHistory } from 'react-router';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
-
   return (
     <div
       role="tabpanel"
@@ -89,7 +89,54 @@ export default function MainPage() {
   const handleChangeIndex = (index) => {
     setValue(index);
   };
-  const userRegister = async () => {
+  // const userPassAuth = () => {
+  //   console.log("user method")
+  //   const email = document.getElementById("emailSign").value;
+  //   const password = document.getElementById("passwordSign").value;
+  //   auth.signInWithEmailAndPassword(email, password)
+  //   .then(async (userCredential) => {
+  //     const user = userCredential.user;
+  //     swal({
+  //       title: "სისტემაში წარმატებულად შეხვედით!",
+  //       icon: "success",
+  //       dangerMode: true,
+  //     })
+  //   })
+  //   .catch((error) => {
+  //     // var errorCode = error.code;
+  //     // var errorMessage = error.message;
+  //     // // 
+  //     swal({
+  //       title: "სისტემაში შესვლისას წარმოიშვა შეცდომა, გთხოვთ სცადოთ თავიდან!",
+  //       icon: "error",
+  //       dangerMode: true,
+  //     })
+  //   });
+  // }
+  const userPassAuth = () => {
+    const email = document.getElementById("mail").value;
+    const password = document.getElementById("pass").value;
+    auth.signInWithEmailAndPassword(email, password)
+        .then(async (userCredential) => {
+        const user = userCredential.user;
+        swal({
+          title: "სისტემაში წარმატებულად შეხვედით!",
+          icon: "success",
+          dangerMode: true,
+        })
+        .catch((error) => {
+          // var errorCode = error.code;
+          // var errorMessage = error.message;
+          // // 
+          swal({
+            title: "სისტემაში შესვლისას წარმოიშვა შეცდომა, გთხოვთ სცადოთ თავიდან.",
+            icon: "error",
+            dangerMode: true,
+          })
+        });
+    })
+}
+  const userRegister = () => {
     const firstName = document.getElementById("firstName").value;
     const lastName = document.getElementById("lastName").value;
     const id = document.getElementById("id").value;
@@ -97,28 +144,34 @@ export default function MainPage() {
     const password = document.getElementById("password").value;
     firebase.auth().createUserWithEmailAndPassword(email, password)
     .then((userCredential) => {
-      // Signed in 
       var user = userCredential.user;
-      swal("Hello world!");
-      // ...
+      firestore.collection("users").add({
+        uid: user.uid,
+        firstName: firstName,
+        lastName: lastName,
+        id: id
+      })
+      swal({
+        title: "რეგისტრაცია წარმატებით დასრულდა!",
+        icon: "success",
+        dangerMode: true,
+      })
     })
     .catch((error) => {
       // var errorCode = error.code;
       // var errorMessage = error.message;
-      // // 
       swal({
         title: "Are you sure?",
         text: "Are you sure that you want to leave this page?",
         icon: "warning",
         dangerMode: true,
       })
-      .then(willDelete => {
-        if (willDelete) {
-          swal("Deleted!", "Your imaginary file has been deleted!", "success");
-        }
-      });
     });
   }
+  // firestore.collection('users').get().then(snap => {
+  //   const size = snap.size
+  //   console.log(size)
+  // });
   return (
     <div className={classes.root}>
       <AppBar position="static" color="default">
@@ -151,15 +204,15 @@ export default function MainPage() {
               <Typography component="h1" variant="h5">
                 შესვლა
               </Typography>
-              <form className={classes.form} noValidate>
+              <form className={classes.form} noValidate onSubmit={(event) => event.preventDefault()}>
                 <TextField
                   variant="outlined"
                   margin="normal"
                   required
                   fullWidth
-                  id="email"
+                  id="mail"
                   label="ელ. ფოსტა"
-                  name="emailSign"
+                  name="email"
                   autoComplete="email"
                   autoFocus
                 />
@@ -171,15 +224,15 @@ export default function MainPage() {
                   name="password"
                   label="პაროლი"
                   type="password"
-                  id="passwordSign"
+                  id="pass"
                   autoComplete="current-password"
                 />
                 <Button
-                  type="submit"
                   fullWidth
                   variant="contained"
                   color="primary"
                   className={classes.submit}
+                  onClick={userPassAuth}
                 >
                   შესვლა
                 </Button>
@@ -198,7 +251,7 @@ export default function MainPage() {
                 რეგისტრაცია
               </Typography>
               <br />
-              <form className={classes.form} noValidate>
+              <form className={classes.form} noValidate onSubmit={(event) => event.preventDefault()}>
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
                     <TextField
@@ -228,7 +281,7 @@ export default function MainPage() {
                       variant="outlined"
                       required
                       fullWidth
-                      id="number"
+                      id="id"
                       label="პირადი ნომერი"
                       name="id"
                       autoComplete="id"
@@ -259,12 +312,11 @@ export default function MainPage() {
                   </Grid>
                 </Grid>
                 <Button
-                  type="submit"
                   fullWidth
                   variant="contained"
                   color="primary"
                   className={classes.submit}
-                  onClick={() => userRegister}
+                  onClick={userRegister}
                 >
                   რეგისტრაცია
                 </Button>
