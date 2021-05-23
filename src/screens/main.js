@@ -300,7 +300,7 @@ export default function MainPage() {
     )
   }
   else {
-    return "nope"
+    return "თქვენ არ გაქვთ ამ გვერდზე წვდომა, დაბრუნდით მთავარ გვერდზე."
   }
   }
   function Login() {
