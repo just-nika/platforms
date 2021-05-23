@@ -54,6 +54,7 @@ export default function MainPage() {
   
   function Main(props) {
     const [platforms, setPlatforms] = useState([]);
+    const [comments, setComments] = useState([]);
     const getPlatforms = async () => {
       const data = await firestore.collection("platforms").get();
       setPlatforms(data.docs.map(doc => ({
@@ -61,6 +62,16 @@ export default function MainPage() {
         id: doc.id
       })))
     }
+    const getComments = async () => {
+      const data = await firestore.collection("comments").get();
+      setComments(data.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id
+      })))
+    }
+  useEffect(() => {
+    getComments();
+  }, [])
   useEffect(() => {
     getPlatforms();
   }, [])
@@ -155,10 +166,55 @@ export default function MainPage() {
     
     const classes = postsStyle();
     
-  
+    const addStarOne = async () => {
+      const quantity = 1;
+      const platformId = document.getElementById("platformId").value;
+      await firestore.collection("one").doc(platformId).set({
+      }).then(() => {
+      })
+    }
+    const addStarTwo = async () => {
+      const quantity = 1;
+      const platformId = document.getElementById("platformId2").value;
+      await firestore.collection("two").doc(platformId).set({
+      }).then(() => {
+      })
+    }
+    const addStarThree = async () => {
+      const quantity = 1;
+      const platformId = document.getElementById("platformId3").value;
+      await firestore.collection("three").doc(platformId).set({
+      }).then(() => {
+      })
+    }
+    const addStarFour = async () => {
+      const quantity = 1;
+      const platformId = document.getElementById("platformId4").value;
+      await firestore.collection("four").doc(platformId).set({
+      }).then(() => {
+      })
+    }
+    const addStarFive = async () => {
+      const quantity = 1;
+      const platformId = document.getElementById("platformId5").value;
+      await firestore.collection("five").doc(platformId).set({
+      }).then(() => {
+      })
+    }
+    const addComment = async () => {
+      const content = document.getElementById("content").value;
+      const id = document.getElementById("platformIdComm").value;
+      await firestore.collection("comments").doc(id).set({
+          email: email,
+          content: content,
+      })
+      .catch((error) => {
+      });
+    }
     const handleChange = (panel) => (event, isExpanded) => {
       setExpanded(isExpanded ? panel : false);
     };
+    
   const { post } = props;
     return (
         <div>
@@ -171,7 +227,13 @@ export default function MainPage() {
           <br />
           <br />
            { 
-             platforms.map((plat, index) => { 
+                 platforms.map((plat, index) => { 
+               // if (plat.id == ) {
+               //   firestore.collection('users').get().then(snap => {
+              //     const size = snap.size
+              //     console.log(size)
+              //   });
+              // }
                return ( 
                             <div className={classes.root}>
                               <Accordion expanded={expanded === 'panel1'} onChange={handleChange('panel1')}>
@@ -196,19 +258,36 @@ export default function MainPage() {
                                     <br />
                                     <br />
                                     <b><p>შეაფასეთ პლატფორმა 5 ბალიანი სისტემით:</p></b>
-                                    <form action=""><Button style={{color: "gold"}}><StarsIcon /></Button></form>
-                                    <form action=""><Button style={{color: "gold"}}><StarsIcon /><StarsIcon /></Button></form>
-                                    <form action=""><Button style={{color: "gold"}}><StarsIcon /><StarsIcon /><StarsIcon /></Button></form>
-                                    <form action=""><Button style={{color: "gold"}}><StarsIcon /><StarsIcon /><StarsIcon /><StarsIcon /></Button></form>
-                                    <form action=""><Button style={{color: "gold"}}><StarsIcon /><StarsIcon /><StarsIcon /><StarsIcon /><StarsIcon /></Button></form>
+                                    <form action=""><Button style={{color: "gold"}} onClick={addStarOne}><StarsIcon /></Button><input type="hidden" id="platformId" value={plat.id}/></form>
+                                    <form action=""><Button style={{color: "gold"}} onClick={addStarTwo}><StarsIcon /><StarsIcon /></Button><input type="hidden" id="platformId2" value={plat.id}/></form>
+                                    <form action=""><Button style={{color: "gold"}} onClick={addStarThree}><StarsIcon /><StarsIcon /><StarsIcon /></Button><input type="hidden" id="platformId3" value={plat.id}/></form>
+                                    <form action=""><Button style={{color: "gold"}} onClick={addStarFour}><StarsIcon /><StarsIcon /><StarsIcon /><StarsIcon /></Button><input type="hidden" id="platformId4" value={plat.id}/></form>
+                                    <form action=""><Button style={{color: "gold"}} onClick={addStarFive}><StarsIcon /><StarsIcon /><StarsIcon /><StarsIcon /><StarsIcon /></Button><input type="hidden" id="platformId5" value={plat.id}/></form>
                                     <br />
                                     <p>დატოვეთ კომენტარი:</p>
                                     <form action="" style={{paddingLeft: "10%", paddingRight: "10%", height: "60px"}}>
                                       <label htmlFor=""><i>{email}</i></label>
                                       <br />
-                                      <TextField style={{width: "90%"}} id="filled-basic" label="კომენტარი" variant="filled" /><Button style={{height: "100%"}}>გაგზავნა</Button>
+                                      <input type="hidden" id="platformIdComm" value={plat.id}/>
+                                      <input type="hidden" value={email}/>
+                                      <TextField style={{width: "90%"}} id="content" label="კომენტარი" variant="filled" /><Button style={{height: "100%"}} onClick={addComment}>გაგზავნა</Button>
                                     </form>
                                     <br />
+                                    { 
+                                      comments.map((comm, index) => { 
+                                    if (plat.id == comm.id) {
+                                      return ( 
+                                        <>
+                                          <div className="comments">
+                                            <br />
+                                            <br />
+                                            <p><b>{comm.email}</b> - {comm.content}</p>
+                                          </div>
+                                        </>
+                                      )
+                                    }
+                                  })
+                                }
                                   </Typography>
                                 </AccordionDetails>
                               </Accordion>
@@ -349,10 +428,7 @@ export default function MainPage() {
       });
       history.push("/home");
     }
-    // firestore.collection('users').get().then(snap => {
-    //   const size = snap.size
-    //   console.log(size)
-    // });
+    
     return (
       <div className={classes.root}>
         <AppBar position="static" color="default">
