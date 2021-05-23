@@ -30,6 +30,7 @@ import Accordion from '@material-ui/core/Accordion';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import StarsIcon from '@material-ui/icons/Stars';
 import {
   randomCreatedDate,
   randomUpdatedDate,
@@ -52,10 +53,17 @@ export default function MainPage() {
   )
   
   function Main(props) {
-    const [ setPosts] = useState([]);
-    // useEffect(() => {
-    //     getPosts();
-    // }, [])
+    const [platforms, setPlatforms] = useState([]);
+    const getPlatforms = async () => {
+      const data = await firestore.collection("platforms").get();
+      setPlatforms(data.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id
+      })))
+    }
+  useEffect(() => {
+    getPlatforms();
+  }, [])
     const [expanded, setExpanded] = React.useState(false);
     var user = firebase.auth().currentUser;
     var email, uid;
@@ -130,7 +138,7 @@ export default function MainPage() {
         width: '100%',
       },
     });
-    const posts = makeStyles((theme) => ({
+    const postsStyle = makeStyles((theme) => ({
       root: {
         width: '100%',
       },
@@ -145,14 +153,8 @@ export default function MainPage() {
       },
     }));
     
-    const classes = posts();
-    const getPosts = async () => {
-      const data = await firestore.collection("posts").get();
-      setPosts(data.docs.map(doc => ({
-        ...doc.data(),
-        id: doc.id
-      })))
-  }
+    const classes = postsStyle();
+    
   
     const handleChange = (panel) => (event, isExpanded) => {
       setExpanded(isExpanded ? panel : false);
@@ -160,6 +162,7 @@ export default function MainPage() {
   const { post } = props;
     return (
         <div>
+          <br />
           <div style={{ height: 400, width: '60%', margin: "auto" }}>
             <DataGrid sortModel={sortModel} rows={rows} columns={columns} />
           </div>
@@ -167,30 +170,53 @@ export default function MainPage() {
           <br />
           <br />
           <br />
-          <div className={classes.root}>
-          {
-                        posts.map((post, index) => {
-                          return (
-      <Accordion expanded={expanded === 'panel1'} onChange={handleChange('panel1')}>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel1bh-content"
-          id="panel1bh-header"
-        >
-          <Typography className={classes.heading}>General settings</Typography>
-          <Typography className={classes.secondaryHeading}>I am an accordion</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Typography>
-            Nulla facilisi. Phasellus sollicitudin nulla et quam mattis feugiat. Aliquam eget
-            maximus est, id dignissim quam.
-          </Typography>
-        </AccordionDetails>
-      </Accordion>
+           { 
+             platforms.map((plat, index) => { 
+               return ( 
+                            <div className={classes.root}>
+                              <Accordion expanded={expanded === 'panel1'} onChange={handleChange('panel1')}>
+                                <AccordionSummary
+                                  expandIcon={<ExpandMoreIcon />}
+                                  aria-controls="panel1bh-content"
+                                  id="panel1bh-header"
+                                >
+                                  <Typography className={classes.heading}>{plat.name}</Typography>
+                                  <Typography className={classes.secondaryHeading}>{plat.link}</Typography>
+                                </AccordionSummary>
+                                <AccordionDetails>
+                                  <Typography style={{textAlign: "start"}}>
+                                    {plat.description}
+                                    <br />
+                                    <br />
+                                    <a href={plat.link} target="_blank">{plat.name}</a>
+                                    <br />
+                                    <br />
+                                    <p>აქვს თუ არა ლიმიტი: <b>{plat.limit}</b></p>
+                                    <p>არის თუ არა ფასიანი: <b>{plat.price}</b></p>
+                                    <br />
+                                    <br />
+                                    <b><p>შეაფასეთ პლატფორმა 5 ბალიანი სისტემით:</p></b>
+                                    <form action=""><Button style={{color: "gold"}}><StarsIcon /></Button></form>
+                                    <form action=""><Button style={{color: "gold"}}><StarsIcon /><StarsIcon /></Button></form>
+                                    <form action=""><Button style={{color: "gold"}}><StarsIcon /><StarsIcon /><StarsIcon /></Button></form>
+                                    <form action=""><Button style={{color: "gold"}}><StarsIcon /><StarsIcon /><StarsIcon /><StarsIcon /></Button></form>
+                                    <form action=""><Button style={{color: "gold"}}><StarsIcon /><StarsIcon /><StarsIcon /><StarsIcon /><StarsIcon /></Button></form>
+                                    <br />
+                                    <p>დატოვეთ კომენტარი:</p>
+                                    <form action="" style={{paddingLeft: "10%", paddingRight: "10%", height: "60px"}}>
+                                      <label htmlFor=""><i>{email}</i></label>
+                                      <br />
+                                      <TextField style={{width: "90%"}} id="filled-basic" label="კომენტარი" variant="filled" /><Button style={{height: "100%"}}>გაგზავნა</Button>
+                                    </form>
+                                    <br />
+                                  </Typography>
+                                </AccordionDetails>
+                              </Accordion>
+                              <br />
+                            </div>
                                   )
-                                })
-                            }
-    </div>
+                                 })
+                             }
         </div>
     )
   }
@@ -288,6 +314,11 @@ export default function MainPage() {
         history.push("/home");
       })
     }
+  //   db.collection("cities").doc("LA").set({
+  //     name: "Los Angeles",
+  //     state: "CA",
+  //     country: "USA"
+  // })
     const userRegister = () => {
       const firstName = document.getElementById("firstName").value;
       const lastName = document.getElementById("lastName").value;
@@ -297,8 +328,7 @@ export default function MainPage() {
       firebase.auth().createUserWithEmailAndPassword(email, password)
       .then((userCredential) => {
         var user = userCredential.user;
-        firestore.collection("users").add({
-          uid: user.uid,
+        firestore.collection("users").doc(user.uid).set({
           firstName: firstName,
           lastName: lastName,
           id: id
